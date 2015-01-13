@@ -19,7 +19,7 @@ Add `grepolis/php-resque` to your application's composer.json.
 ```json
 {
     "require": {
-        "grepolis/php-resque": "master"
+        "innogames/php-resque": "master"
     }
 }
 ```
