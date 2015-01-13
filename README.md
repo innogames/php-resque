@@ -1,11 +1,6 @@
 # Resque for PHP
 ## Namespaced Fork
 
-[![Build Status](https://travis-ci.org/vend/php-resque.svg?branch=master)](https://travis-ci.org/vend/php-resque)
-[![Latest Stable Version](https://poser.pugx.org/vend/resque/v/stable.svg)](https://packagist.org/packages/vend/resque)
-[![Latest Unstable Version](https://poser.pugx.org/vend/resque/v/unstable.svg)](https://packagist.org/packages/vend/resque)
-[![License](https://poser.pugx.org/vend/resque/license.svg)](https://packagist.org/packages/vend/resque)
-
 [Resque](https://github.com/resque/resque) is a Redis-backed library for creating background jobs, placing
 those jobs on one or more queues, and processing them later.
 
@@ -13,18 +8,18 @@ This is a PHP fork of the Resque worker and job classes. This makes it compatibl
 resque-web interface, and with other Resque libraries. (You could enqueue jobs from Ruby and dequeue
 them in PHP, for instance).
 
-This library (`vend/resque`) is a fork of [chrisboulton/php-resque](https://github.com/chrisboulton/php-resque) at around
+This is a fork of the library [vend/resque](https://github.com/vend/resque) which is a fork of [chrisboulton/php-resque](https://github.com/chrisboulton/php-resque) at around
 version 1.3, that has been refactored to remove global state, add namespacing, and improve
 decoupling. This makes it easier to use and extend.
 
 ## Getting Started
 
-Add `vend/resque` to your application's composer.json.
+Add `grepolis/php-resque` to your application's composer.json.
 
 ```json
 {
     "require": {
-        "vend/resque": "~2.1.0"
+        "grepolis/php-resque": "master"
     }
 }
 ```
@@ -33,6 +28,7 @@ Add `vend/resque` to your application's composer.json.
 
 * PHP 5.3+
 * A Redis client library (for instance, [Predis](https://github.com/nrk/predis) or [Credis](https://github.com/colinmollenhour/credis))
+* The PHP pcntl library for proper forking is recommended (not available under Windows) but it still runs without it
 
 ## Jobs
 
@@ -240,47 +236,4 @@ a candidate for refactoring:
 
 ## Contributors ##
 
-Here's the contributor list from earlier versions, at [chrisboulton/php-resque](https://github.com/chrisboulton/php-resque):
-
-* @chrisboulton
-* @acinader
-* @ajbonner
-* @andrewjshults
-* @atorres757
-* @benjisg
-* @cballou
-* @chaitanyakuber
-* @charly22
-* @CyrilMazur
-* @d11wtq
-* @danhunsaker
-* @dceballos
-* @ebernhardson
-* @hlegius
-* @hobodave
-* @humancopy
-* @JesseObrien
-* @jjfrey
-* @jmathai
-* @joshhawthorne
-* @KevBurnsJr
-* @lboynton
-* @maetl
-* @matteosister
-* @MattHeath
-* @mickhrmweb
-* @Olden
-* @patrickbajao
-* @pedroarnal
-* @ptrofimov
-* @rajibahmed
-* @richardkmiller
-* @Rockstar04
-* @ruudk
-* @salimane
-* @scragg0x
-* @scraton
-* @thedotedge
-* @tonypiper
-* @trimbletodd
-* @warezthebeef
+see [chrisboulton/php-resque](https://github.com/chrisboulton/php-resque) and [vend/resque](https://github.com/vend/resque) for the original contributor lists.

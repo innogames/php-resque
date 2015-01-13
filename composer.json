@@ -1,10 +1,10 @@
 {
     "_-x-vim-formatting": " vim: set ft=javascript ts=4 sw=4 et : ",
 
-    "name":        "vend/resque",
-    "description": "Namespaced port of chrisbolton/php-resque, supports Predis, more DI",
+    "name":        "innogames/php-resque",
+    "description": "Port of vend/resque which is the namespaced port of chrisbolton/php-resque, supports Predis, more DI",
     "license":     "MIT",
-
+    "minimum-stability": "dev",
     "authors": [
         {
             "name": "Chris Boulton",
@@ -13,6 +13,10 @@
         {
             "name": "Vend Devteam",
             "email": "devteam@vendhq.com"
+        },
+        {
+            "name": "Grepolis Devs",
+            "email": "grepolis_browser@innogames.de"
         }
     ],
 
@@ -28,7 +32,6 @@
 
     "require": {
         "php":                ">=5.3.7",
-        "ext-pcntl":          "*",
         "psr/log":            "1.0.0",
         "symfony/console":    "~2.5.6"
     },

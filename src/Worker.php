@@ -308,7 +308,9 @@ class Worker implements LoggerAwareInterface
                 $this->logger->notice($status);
                 $this->perform($job);
 
-                exit(0);
+                if (function_exists('pcntl_fork')) {
+                    exit(0);
+                }
             } elseif ($this->child > 0) {
                 // Parent process, sit and wait
                 $status = 'Forked ' . $this->child . ' at ' . strftime('%F %T');
@@ -487,7 +489,8 @@ class Worker implements LoggerAwareInterface
     private function fork()
     {
         if (!function_exists('pcntl_fork')) {
-            throw new \Exception('pcntl not available, could not fork');
+            $this->logger->warning('Using non fork version!');
+            return false;
         }
 
         // Immediately before a fork, disconnect the redis client
