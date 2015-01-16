@@ -106,7 +106,7 @@ abstract class AbstractJob implements ArrayAccess, IteratorAggregate, JobInterfa
      *
      * @return string ID of the recreated job
      */
-    protected function recreate()
+    public function recreate()
     {
         $status = $this->getStatus();
         $tracking = $status->isTracking();
