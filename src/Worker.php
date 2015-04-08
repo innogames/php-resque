@@ -129,7 +129,9 @@ class Worker implements LoggerAwareInterface
             'id_format'        => '%s:%d:%s',
             'id_location_preg' => '/^([^:]+?):([0-9]+):/',
             'shuffle_queues'   => true,
-            'sort_queues'      => false
+            'sort_queues'      => false,
+			'pre_perform'      => false,
+			'post_perform'     => false,
         ), $options);
 
         if (!$this->options['server_name']) {
@@ -342,8 +344,15 @@ class Worker implements LoggerAwareInterface
     public function perform(JobInterface $job)
     {
         try {
-            $job->perform();
-        } catch (Exception $e) {
+			if ($this->options['pre_perform']) {
+				$this->options['pre_perform']();
+			}
+			$job->perform();
+			if ($this->options['post_perform']) {
+				$this->options['post_perform']();
+			}
+
+		} catch (Exception $e) {
             $this->logger->notice('{job} failed: {exception}', array(
                 'job'     => $job,
                 'exception' => $e
