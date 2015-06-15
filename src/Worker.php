@@ -118,7 +118,7 @@ class Worker implements LoggerAwareInterface
      *                               out of worker ID
      *       - shuffle_queues   => bool, whether to shuffle the queues on reserve, so we evenly check all queues
      *       - sort_queues      => bool, whether to check the queues in alphabetical order (mutually exclusive with shuffle_queues)
-	 *       - no_fork          => bool, whether to suppress fork if available
+     *       - no_fork          => bool, whether to suppress fork if available
      */
     protected function configure(array $options)
     {
@@ -131,9 +131,9 @@ class Worker implements LoggerAwareInterface
             'id_location_preg' => '/^([^:]+?):([0-9]+):/',
             'shuffle_queues'   => true,
             'sort_queues'      => false,
-			'pre_perform'      => false,
-			'post_perform'     => false,
-			'no_fork'          => false,
+            'pre_perform'      => false,
+            'post_perform'     => false,
+            'no_fork'          => false,
         ), $options);
 
         if (!$this->options['server_name']) {
@@ -302,14 +302,14 @@ class Worker implements LoggerAwareInterface
             $this->logger->info('got {job}', array('job' => $job));
             $this->workingOn($job);
 
-			if ($this->options['no_fork']) {
-            	$this->child = null;
-			} else {
-            	$this->child = $this->fork();
-			}
+            if ($this->options['no_fork']) {
+                $this->child = null;
+            } else {
+                $this->child = $this->fork();
+            }
 
             if (!$this->child) {
-            	// Forked and we're the child. Run the job.
+                // Forked and we're the child. Run the job.
                 $status = 'Processing ' . $job->getQueue() . ' since ' . strftime('%F %T');
                 $this->updateProcLine($status);
                 $this->logger->notice($status);
@@ -349,15 +349,15 @@ class Worker implements LoggerAwareInterface
     public function perform(JobInterface $job)
     {
         try {
-			if ($this->options['pre_perform']) {
-				$this->options['pre_perform']();
-			}
-			$job->perform();
-			if ($this->options['post_perform']) {
-				$this->options['post_perform']();
-			}
+            if ($this->options['pre_perform']) {
+                $this->options['pre_perform']();
+            }
+            $job->perform();
+            if ($this->options['post_perform']) {
+                $this->options['post_perform']();
+            }
 
-		} catch (Exception $e) {
+        } catch (Exception $e) {
             $this->logger->notice('{job} failed: {exception}', array(
                 'job'     => $job,
                 'exception' => $e
@@ -502,10 +502,10 @@ class Worker implements LoggerAwareInterface
      */
     private function fork()
     {
-		if ($this->options['no_fork']) {
-			$this->logger->notice('Forking disabled');
-			return false;
-		}
+        if ($this->options['no_fork']) {
+            $this->logger->notice('Forking disabled');
+            return false;
+        }
 
         if (!function_exists('pcntl_fork')) {
             $this->logger->warning('Using non fork version!');
