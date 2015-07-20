@@ -221,8 +221,10 @@ class Status
             'updated' => $this->attributes['updated']
         ));
 
-        // Expire the status for completed jobs after 24 hours
-        if (in_array($status, self::$complete)) {
+        // Expire or delete the status for completed jobs after given time
+        if ($status == self::STATUS_COMPLETE) {
+            $this->client->del($this->getHashKey());
+        } elseif (in_array($status, self::$complete)) {
             $this->client->expire($this->getHashKey(), self::COMPLETE_TTL);
         } else {
             $this->client->expire($this->getHashKey(), self::INCOMPLETE_TTL);
