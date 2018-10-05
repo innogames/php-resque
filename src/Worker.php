@@ -22,6 +22,8 @@ use \RuntimeException;
  */
 class Worker implements LoggerAwareInterface
 {
+    const DEFAULT_SIGNO = 9;
+
     /**
      * @var string String identifying this worker.
      */
@@ -442,7 +444,7 @@ class Worker implements LoggerAwareInterface
                 $this->logger->info('Refreshing queues dynamically, but there are no queues yet');
             } else {
                 $this->logger->notice('Not listening to any queues, and dynamic queue refreshing is disabled');
-                $this->shutdownNow();
+                $this->shutdownNow(self::DEFAULT_SIGNO);
             }
         }
 
@@ -583,6 +585,7 @@ class Worker implements LoggerAwareInterface
 
     /**
      * Signal handler callback for USR2, pauses processing of new jobs.
+     * @param int $signo
      */
     public function pauseProcessing($signo)
     {
@@ -593,6 +596,7 @@ class Worker implements LoggerAwareInterface
     /**
      * Signal handler callback for CONT, resumes worker allowing it to pick
      * up new jobs.
+     * @param int $signo
      */
     public function unPauseProcessing($signo)
     {
@@ -603,6 +607,7 @@ class Worker implements LoggerAwareInterface
     /**
      * Signal handler for SIGPIPE, in the event the redis connection has gone away.
      * Attempts to reconnect to redis, or raises an Exception.
+     * @param int $signo
      */
     public function reestablishRedisConnection($signo)
     {
@@ -613,6 +618,7 @@ class Worker implements LoggerAwareInterface
     /**
      * Schedule a worker for shutdown. Will finish processing the current job
      * and when the timeout interval is reached, the worker will shut down.
+     * @param int $signo
      */
     public function shutdown($signo)
     {
@@ -623,11 +629,12 @@ class Worker implements LoggerAwareInterface
     /**
      * Force an immediate shutdown of the worker, killing any child jobs
      * currently running.
+     * @param int $signo
      */
     public function shutdownNow($signo)
     {
-        $this->shutdown();
-        $this->killChild();
+        $this->shutdown($signo);
+        $this->killChild($signo);
     }
 
     /**
@@ -655,7 +662,7 @@ class Worker implements LoggerAwareInterface
             $this->child = null;
         } else {
             $this->logger->notice('Child ' . $this->child . ' not found, restarting.');
-            $this->shutdown();
+            $this->shutdown($signo);
         }
     }
 

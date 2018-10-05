@@ -58,7 +58,7 @@ class WorkerTest extends Test
         $this->resque->clearQueue('jobs');
 
         $worker = $this->getWorker('*');
-        $worker->pauseProcessing();
+        $worker->pauseProcessing(Worker::DEFAULT_SIGNO);
 
         $this->resque->enqueue('jobs', 'Resque\Test\Job');
 
@@ -325,6 +325,6 @@ class WorkerTest extends Test
     public function testReestablishRedisConnection()
     {
         $worker = $this->getWorker('jobs');
-        $worker->reestablishRedisConnection();
+        $worker->reestablishRedisConnection(Worker::DEFAULT_SIGNO);
     }
 }
