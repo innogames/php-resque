@@ -23,6 +23,12 @@ use \RuntimeException;
 class Worker implements LoggerAwareInterface
 {
     /**
+     * This is not actually evaluated, but as the signal handlers require the signal number to be supplied, we just
+     * assume 15 (SIGTERM) by default
+     */
+    const DEFAULT_SIGNO = 15;
+
+    /**
      * @var string String identifying this worker.
      */
     protected $id;
@@ -271,6 +277,7 @@ class Worker implements LoggerAwareInterface
         $this->startup();
 
         while (true) {
+            pcntl_signal_dispatch();
             if ($this->shutdown) {
                 $this->unregister();
                 return;
@@ -441,7 +448,7 @@ class Worker implements LoggerAwareInterface
                 $this->logger->info('Refreshing queues dynamically, but there are no queues yet');
             } else {
                 $this->logger->notice('Not listening to any queues, and dynamic queue refreshing is disabled');
-                $this->shutdownNow();
+                $this->shutdownNow(self::DEFAULT_SIGNO);
             }
         }
 
@@ -582,8 +589,9 @@ class Worker implements LoggerAwareInterface
 
     /**
      * Signal handler callback for USR2, pauses processing of new jobs.
+     * @param int $signo
      */
-    public function pauseProcessing()
+    public function pauseProcessing($signo)
     {
         $this->logger->notice('USR2 received; pausing job processing');
         $this->paused = true;
@@ -592,8 +600,9 @@ class Worker implements LoggerAwareInterface
     /**
      * Signal handler callback for CONT, resumes worker allowing it to pick
      * up new jobs.
+     * @param int $signo
      */
-    public function unPauseProcessing()
+    public function unPauseProcessing($signo)
     {
         $this->logger->notice('CONT received; resuming job processing');
         $this->paused = false;
@@ -602,8 +611,9 @@ class Worker implements LoggerAwareInterface
     /**
      * Signal handler for SIGPIPE, in the event the redis connection has gone away.
      * Attempts to reconnect to redis, or raises an Exception.
+     * @param int $signo
      */
-    public function reestablishRedisConnection()
+    public function reestablishRedisConnection($signo)
     {
         $this->logger->notice('SIGPIPE received; attempting to reconnect');
         $this->resque->reconnect();
@@ -612,8 +622,9 @@ class Worker implements LoggerAwareInterface
     /**
      * Schedule a worker for shutdown. Will finish processing the current job
      * and when the timeout interval is reached, the worker will shut down.
+     * @param int $signo
      */
-    public function shutdown()
+    public function shutdown($signo)
     {
         $this->shutdown = true;
         $this->logger->notice('Exiting...');
@@ -622,18 +633,19 @@ class Worker implements LoggerAwareInterface
     /**
      * Force an immediate shutdown of the worker, killing any child jobs
      * currently running.
+     * @param int $signo
      */
-    public function shutdownNow()
+    public function shutdownNow($signo)
     {
-        $this->shutdown();
-        $this->killChild();
+        $this->shutdown($signo);
+        $this->killChild($signo);
     }
 
     /**
      * Kill a forked child job immediately. The job it is processing will not
      * be completed.
      */
-    public function killChild()
+    public function killChild($signo)
     {
         if (!$this->child) {
             $this->logger->notice('No child to kill.');
@@ -654,7 +666,7 @@ class Worker implements LoggerAwareInterface
             $this->child = null;
         } else {
             $this->logger->notice('Child ' . $this->child . ' not found, restarting.');
-            $this->shutdown();
+            $this->shutdown($signo);
         }
     }
 
