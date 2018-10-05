@@ -271,6 +271,7 @@ class Worker implements LoggerAwareInterface
         $this->startup();
 
         while (true) {
+            pcntl_signal_dispatch();
             if ($this->shutdown) {
                 $this->unregister();
                 return;
@@ -583,7 +584,7 @@ class Worker implements LoggerAwareInterface
     /**
      * Signal handler callback for USR2, pauses processing of new jobs.
      */
-    public function pauseProcessing()
+    public function pauseProcessing($signo)
     {
         $this->logger->notice('USR2 received; pausing job processing');
         $this->paused = true;
@@ -593,7 +594,7 @@ class Worker implements LoggerAwareInterface
      * Signal handler callback for CONT, resumes worker allowing it to pick
      * up new jobs.
      */
-    public function unPauseProcessing()
+    public function unPauseProcessing($signo)
     {
         $this->logger->notice('CONT received; resuming job processing');
         $this->paused = false;
@@ -603,7 +604,7 @@ class Worker implements LoggerAwareInterface
      * Signal handler for SIGPIPE, in the event the redis connection has gone away.
      * Attempts to reconnect to redis, or raises an Exception.
      */
-    public function reestablishRedisConnection()
+    public function reestablishRedisConnection($signo)
     {
         $this->logger->notice('SIGPIPE received; attempting to reconnect');
         $this->resque->reconnect();
@@ -613,7 +614,7 @@ class Worker implements LoggerAwareInterface
      * Schedule a worker for shutdown. Will finish processing the current job
      * and when the timeout interval is reached, the worker will shut down.
      */
-    public function shutdown()
+    public function shutdown($signo)
     {
         $this->shutdown = true;
         $this->logger->notice('Exiting...');
@@ -623,7 +624,7 @@ class Worker implements LoggerAwareInterface
      * Force an immediate shutdown of the worker, killing any child jobs
      * currently running.
      */
-    public function shutdownNow()
+    public function shutdownNow($signo)
     {
         $this->shutdown();
         $this->killChild();
@@ -633,7 +634,7 @@ class Worker implements LoggerAwareInterface
      * Kill a forked child job immediately. The job it is processing will not
      * be completed.
      */
-    public function killChild()
+    public function killChild($signo)
     {
         if (!$this->child) {
             $this->logger->notice('No child to kill.');
