@@ -158,13 +158,14 @@ class Settings implements LoggerAwareInterface
     public function catchSignals()
     {
         if (function_exists('pcntl_signal')) {
-            pcntl_signal(SIGINT, function () {
-                $this->logger->debug('SIGINT received');
+            $self = $this;
+            pcntl_signal(SIGINT, function () use ($self) {
+                $self->logger->debug('SIGINT received');
                 exit;
             });
 
-            pcntl_signal(SIGTERM, function () {
-                $this->logger->debug('SIGTERM received');
+            pcntl_signal(SIGTERM, function () use ($self) {
+                $self->logger->debug('SIGTERM received');
                 exit;
             });
         }

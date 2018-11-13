@@ -448,7 +448,7 @@ class Worker implements LoggerAwareInterface
                 $this->logger->info('Refreshing queues dynamically, but there are no queues yet');
             } else {
                 $this->logger->notice('Not listening to any queues, and dynamic queue refreshing is disabled');
-                $this->shutdownNow(self::DEFAULT_SIGNO);
+                $this->shutdownNow(self::DEFAULT_SIGNO, null);
             }
         }
 
@@ -590,8 +590,9 @@ class Worker implements LoggerAwareInterface
     /**
      * Signal handler callback for USR2, pauses processing of new jobs.
      * @param int $signo
+     * @param mixed $signinfo
      */
-    public function pauseProcessing($signo)
+    public function pauseProcessing($signo, $signinfo)
     {
         $this->logger->notice('USR2 received; pausing job processing');
         $this->paused = true;
@@ -601,8 +602,9 @@ class Worker implements LoggerAwareInterface
      * Signal handler callback for CONT, resumes worker allowing it to pick
      * up new jobs.
      * @param int $signo
+     * @param mixed $signinfo
      */
-    public function unPauseProcessing($signo)
+    public function unPauseProcessing($signo, $signinfo)
     {
         $this->logger->notice('CONT received; resuming job processing');
         $this->paused = false;
@@ -612,8 +614,9 @@ class Worker implements LoggerAwareInterface
      * Signal handler for SIGPIPE, in the event the redis connection has gone away.
      * Attempts to reconnect to redis, or raises an Exception.
      * @param int $signo
+     * @param mixed $signinfo
      */
-    public function reestablishRedisConnection($signo)
+    public function reestablishRedisConnection($signo, $signinfo)
     {
         $this->logger->notice('SIGPIPE received; attempting to reconnect');
         $this->resque->reconnect();
@@ -623,8 +626,9 @@ class Worker implements LoggerAwareInterface
      * Schedule a worker for shutdown. Will finish processing the current job
      * and when the timeout interval is reached, the worker will shut down.
      * @param int $signo
+     * @param mixed $signinfo
      */
-    public function shutdown($signo)
+    public function shutdown($signo, $signinfo)
     {
         $this->shutdown = true;
         $this->logger->notice('Exiting...');
@@ -634,18 +638,21 @@ class Worker implements LoggerAwareInterface
      * Force an immediate shutdown of the worker, killing any child jobs
      * currently running.
      * @param int $signo
+     * @param mixed $signinfo
      */
-    public function shutdownNow($signo)
+    public function shutdownNow($signo, $signinfo)
     {
-        $this->shutdown($signo);
-        $this->killChild($signo);
+        $this->shutdown($signo, $signinfo);
+        $this->killChild($signo, $signinfo);
     }
 
     /**
      * Kill a forked child job immediately. The job it is processing will not
      * be completed.
+     * @param int $signo
+     * @param mixed $signinfo
      */
-    public function killChild($signo)
+    public function killChild($signo, $signinfo)
     {
         if (!$this->child) {
             $this->logger->notice('No child to kill.');
@@ -666,7 +673,7 @@ class Worker implements LoggerAwareInterface
             $this->child = null;
         } else {
             $this->logger->notice('Child ' . $this->child . ' not found, restarting.');
-            $this->shutdown($signo);
+            $this->shutdown($signo, $signinfo);
         }
     }
 
