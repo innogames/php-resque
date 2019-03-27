@@ -155,7 +155,7 @@ class StatusTest extends Test
         $worker->work(0);
 
         $status = new Status($token, $this->resque);
-        $this->assertEquals(Status::STATUS_COMPLETE, $status->get());
+        $this->assertNull($status->get());
     }
 
     public function testStatusIsNotTrackedWhenToldNotTo()
