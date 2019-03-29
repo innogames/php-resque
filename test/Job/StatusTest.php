@@ -145,17 +145,19 @@ class StatusTest extends Test
         $this->assertEquals(Status::STATUS_FAILED, $after);
     }
 
-    public function testCompletedJobReturnsCompletedStatus()
+    public function testCompletedJobIsRemovedAndStatusUnavailable()
     {
         $this->resque->clearQueue('jobs');
 
         $token = $this->resque->enqueue('jobs', 'Resque\Test\Job', null, true);
+        $status = new Status($token, $this->resque);
+
+        $this->assertEquals(Status::STATUS_WAITING, $status->get());
 
         $worker = $this->getWorker('jobs');
         $worker->work(0);
 
-        $status = new Status($token, $this->resque);
-        $this->assertEquals(Status::STATUS_COMPLETE, $status->get());
+        $this->assertNull($status->get());
     }
 
     public function testStatusIsNotTrackedWhenToldNotTo()
