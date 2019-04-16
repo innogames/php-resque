@@ -28,6 +28,8 @@ class StatusTest extends Test
     public function testConstructor()
     {
         $status = new Status(uniqid(__CLASS__, true), $this->resque);
+
+        $this->assertNotNull($status);
     }
 
     public function testJobStatusCanBeTracked()
@@ -177,12 +179,12 @@ class StatusTest extends Test
         $this->assertNull($status->get());
     }
 
-    /*
     public function testRecreatedJobWithTrackingStillTracksStatus()
     {
         $worker = $this->getWorker('jobs');
         $originalToken = $this->resque->enqueue('jobs', 'Resque\Test\Job', null, true);
 
+        /** @var Test\Job $job */
         $job = $worker->reserve();
 
         if (!$job) {
@@ -200,6 +202,7 @@ class StatusTest extends Test
         $this->assertNotEquals($originalToken, $newToken);
 
         // Now check the status of the new job
+        /** @var Test\Job $newJob */
         $newJob = $worker->reserve();
 
         if (!$newJob) {
@@ -208,5 +211,4 @@ class StatusTest extends Test
 
         $this->assertEquals(Status::STATUS_WAITING, $newJob->getStatus()->get());
     }
-    */
 }
