@@ -2,10 +2,11 @@
 
 namespace Resque;
 
+use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Resque\Test\Settings;
 
-abstract class Test extends \PHPUnit_Framework_TestCase
+abstract class Test extends TestCase
 {
     /**
      * @var Settings

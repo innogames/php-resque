@@ -68,24 +68,23 @@ class WorkerTest extends Test
         $this->assertEquals(0, $worker->getStatistic('processed')->get());
     }
 
-    /*
     public function testResumedWorkerPicksUpJobs()
     {
         $this->resque->clearQueue('jobs');
 
         $worker = $this->getWorker('*');
-        $worker->pauseProcessing();
+        $worker->pauseProcessing(Worker::DEFAULT_SIGNO, 'pauseProcessing');
 
         $this->resque->enqueue('jobs', 'Resque\Test\Job');
         $worker->work(0);
 
         $this->assertEquals(0, $worker->getStatistic('processed')->get());
 
-        $worker->unPauseProcessing();
+        $worker->unPauseProcessing(Worker::DEFAULT_SIGNO, 'unPauseProcessing');
         $worker->work(0);
 
         $this->assertEquals(1, $worker->getStatistic('processed')->get());
-    }*/
+    }
 
     protected function clearQueues(array $queues)
     {
@@ -207,7 +206,6 @@ class WorkerTest extends Test
         $this->assertEquals($payload, $job['payload']);
     }
 
-    /*
     public function testWorkerErasesItsStatsWhenShutdown()
     {
         $this->resque->enqueue('jobs', 'Resque\Test\Job');
@@ -216,14 +214,14 @@ class WorkerTest extends Test
         $worker = $this->getWorker('jobs');
 
         $worker->work(0);
-        $worker->shutdown();
+        $worker->shutdown(Worker::DEFAULT_SIGNO, 'shutdown');
         $worker->work(0);
 
         $this->resque->clearQueue('jobs');
 
         $this->assertEquals(0, $worker->getStatistic('processed')->get());
         $this->assertEquals(0, $worker->getStatistic('failed')->get());
-    }*/
+    }
 
     public function testWorkerCleansUpDeadWorkersOnStartup()
     {
@@ -324,7 +322,15 @@ class WorkerTest extends Test
 
     public function testReestablishRedisConnection()
     {
-        $worker = $this->getWorker('jobs');
+        $client_mock = $this->getMockForAbstractClass('Resque\Client\ClientInterface');
+
+        $resque = new Resque($client_mock);
+        $worker = new Worker($resque, 'jobs');
+
+        $client_mock->expects($this->once())->method('isConnected')->willReturn(true);
+        $client_mock->expects($this->once())->method('disconnect');
+        $client_mock->expects($this->once())->method('connect');
+
         $worker->reestablishRedisConnection(Worker::DEFAULT_SIGNO, null);
     }
 }

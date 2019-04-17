@@ -33,13 +33,13 @@
     "require": {
         "php":                ">=5.3.7",
         "psr/log":            "1.0.0",
-        "symfony/console":    "^2.7"
+        "symfony/console":    ">=2.7"
     },
 
     "require-dev": {
         "colinmollenhour/credis": "1.3.*",
         "predis/predis":          ">=0.8.6",
-        "phpunit/phpunit":        "4.3.*",
+        "phpunit/phpunit":        "^7.0",
         "monolog/monolog":        "1.7.*"
     },
 

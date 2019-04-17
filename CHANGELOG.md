@@ -1,5 +1,18 @@
 ## Forked version to add namespacing
 
+### 3.0.2 ##
+
+* Remove upper bound on supported symfony/console version to support Symfony v3 and v4 based projects
+
+### 3.0.1 ##
+
+* Raise supported symfony/console version to 2.7
+* Fix StatusTest where job is already deleted after completion
+
+### 3.0.0 ##
+
+* Fix signal handling to correctly handle graceful shutdown etc.
+
 ### 2.0.0 ##
 
 **Note:**: vend/php-resque introduces namespacing and other backward incompatible changes to the API.

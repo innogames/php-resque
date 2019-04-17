@@ -1,5 +1,5 @@
 <project name="php-resque" default="build">
-    <property name="build" location="${basedir}/build" />
+    <property file="build.properties" />
 
     <target name="clean">
         <delete dir="${basedir}/build" />
@@ -10,13 +10,13 @@
     </target>
 
     <target name="composer">
-        <exec dir="${basedir}" executable="composer.phar" failonerror="true">
+        <exec dir="${basedir}" executable="${composer}" failonerror="true">
             <arg line="install" />
         </exec>
     </target>
 
     <target name="phpunit">
-        <exec dir="${basedir}/bin" executable="phpunit" failonerror="true">
+        <exec dir="${basedir}" executable="vendor/bin/phpunit" failonerror="true">
             <arg value="--log-junit" />
             <arg value="${basedir}/build/logs/phpunit.xml" />
             <arg value="--coverage-clover" />
