@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Resque\Job;
 
+use InvalidArgumentException;
 use LogicException;
 use Resque\Resque;
-use \InvalidArgumentException;
 
 /**
  * Status tracker/information for a job
@@ -12,10 +14,10 @@ use \InvalidArgumentException;
  * Modified from the original Resque\Status tracker to use a hash; preventing
  * race conditions in updating a single property of the status.
  *
- * @author    Dominic Scheirlinck <dominic@vendhq.com>
- * @author    Chris Boulton <chris.boulton@interspire.com>
+ * @author        Dominic Scheirlinck <dominic@vendhq.com>
+ * @author        Chris Boulton <chris.boulton@interspire.com>
  * @copyright (c) 2010 Chris Boulton
- * @license   http://www.opensource.org/licenses/mit-license.php
+ * @license       http://www.opensource.org/licenses/mit-license.php
  */
 class Status
 {
@@ -29,8 +31,8 @@ class Status
      *
      * @var int
      */
-    const COMPLETE_TTL   = 86400;    // 24 hours
-    const INCOMPLETE_TTL = 604800;   // A week
+    public const COMPLETE_TTL   = 86400;    // 24 hours
+    public const INCOMPLETE_TTL = 604800;   // A week
     /**#@-*/
 
     /**#@+
@@ -38,36 +40,40 @@ class Status
      *
      * @var int
      */
-    const STATUS_WAITING   = 1;
-    const STATUS_RUNNING   = 2;
-    const STATUS_FAILED    = 3;
-    const STATUS_COMPLETE  = 4;
-    const STATUS_RECREATED = 5;
+    public const STATUS_WAITING   = 1;
+    public const STATUS_RUNNING   = 2;
+    public const STATUS_FAILED    = 3;
+    public const STATUS_COMPLETE  = 4;
+    public const STATUS_RECREATED = 5;
+
+    private const ATTRIBUTE_STATUS  = 'status';
+    private const ATTRIBUTE_CREATED = 'created';
+    private const ATTRIBUTE_UPDATED = 'updated';
     /**#@-*/
 
     /**
      * An array of valid statuses
      *
-     * @var array<int>
+     * @var string[]
      */
-    public static $valid = array(
+    public static $valid = [
         self::STATUS_WAITING   => 'waiting',
         self::STATUS_RUNNING   => 'running',
         self::STATUS_FAILED    => 'failed',
         self::STATUS_COMPLETE  => 'complete',
-        self::STATUS_RECREATED => 'recreated'
-    );
+        self::STATUS_RECREATED => 'recreated',
+    ];
 
     /**
      * An array of complete statuses
      *
-     * @var array<int>
+     * @var int[]
      */
-    public static $complete = array(
+    public static $complete = [
         self::STATUS_FAILED,
         self::STATUS_COMPLETE,
-        self::STATUS_RECREATED
-    );
+        self::STATUS_RECREATED,
+    ];
 
     /**
      * @var string The ID of the job this status class refers back to.
@@ -77,14 +83,14 @@ class Status
     /**
      * Whether the status has been loaded from the database
      *
-     * @var boolean
+     * @var bool
      */
     protected $loaded = false;
 
     /**
-     * @var array<string,mixed>
+     * @var mixed[]
      */
-    protected $attributes = array();
+    protected $attributes = [];
 
     /**
      * @var \Resque\Client\ClientInterface
@@ -92,7 +98,7 @@ class Status
     protected $client;
 
     /**
-     * @var boolean|null  Cache variable if the status of this job is being
+     * @var bool|null  Cache variable if the status of this job is being
      *                     monitored or not. True/false when checked at least
      *                     once or null if not checked yet.
      */
@@ -102,18 +108,15 @@ class Status
      * Setup a new instance of the job monitor class for the supplied job ID.
      *
      * @param string $id The ID of the job to manage the status for.
-     * @param \Resque\Resque $resque
+     * @param Resque $resque
      */
-    public function __construct($id, Resque $resque)
+    public function __construct(string $id, Resque $resque)
     {
-        $this->id = $id;
+        $this->id     = $id;
         $this->client = $resque->getClient();
     }
 
-    /**
-     * @return string
-     */
-    public function getId()
+    public function getId(): string
     {
         return $this->id;
     }
@@ -122,72 +125,73 @@ class Status
      * Create a new status monitor item for the supplied job ID. Will create
      * all necessary keys in Redis to monitor the status of a job.
      */
-    public function create()
+    public function create(): void
     {
         $this->isTracking = true;
 
-        $this->setAttributes(array(
-            'status'  => self::STATUS_WAITING,
-            'created' => time(),
-            'updated' => time()
-        ));
+        $this->setAttributes(
+            [
+                self::ATTRIBUTE_STATUS  => self::STATUS_WAITING,
+                self::ATTRIBUTE_CREATED => time(),
+                self::ATTRIBUTE_UPDATED => time(),
+            ]
+        );
     }
 
     /**
      * Sets all the given attributes
      *
-     * @param array<string,mixed> $attributes
+     * @param mixed[] $attributes
+     *
      * @return mixed
      */
     public function setAttributes(array $attributes)
     {
         $this->attributes = array_merge($this->attributes, $attributes);
 
-        $set = array();
+        $set = [];
         foreach ($attributes as $name => $value) {
-            if ($name == 'status') {
+            if ($name == self::ATTRIBUTE_STATUS) {
                 $this->update($value);
                 continue;
             }
             $set[$name] = $value;
         }
 
-        return call_user_func(array($this->client, 'hmset'), $this->getHashKey(), $set);
+        return call_user_func([$this->client, 'hmset'], $this->getHashKey(), $set);
     }
 
     /**
-     * Sets an attribute
-     *
-     * @param string $name
-     * @param string  $value
+     * @param mixed $value
      */
-    public function setAttribute($name, $value)
+    public function setAttribute(string $name, $value)
     {
-        if ($name == 'status') {
+        if ($name == self::ATTRIBUTE_STATUS) {
             $this->update($value);
         } else {
             $this->attributes[$name] = $value;
-            $this->client->hmset($this->getHashKey(), array(
-                $name     => $value,
-                'updated' => time()
-            ));
+            $this->client->hmset(
+                $this->getHashKey(),
+                [
+                    $name                   => $value,
+                    self::ATTRIBUTE_UPDATED => time(),
+                ]
+            );
         }
     }
 
     /**
      * Increments an attribute
      *
-     * The attribute should be an integer field
+     * The attribute should be an int field
      *
-     * @param string  $name
-     * @param integer $by
-     * @return integer The value after incrementing (see hincrby)
+     * @return int The value after incrementing (see hincrby)
      */
-    public function incrementAttribute($name, $by = 1)
+    public function incrementAttribute(string $name, int $by = 1)
     {
         $pipeline = $this->client->pipeline();
         $pipeline->hincrby($this->getHashKey(), $name, $by);
-        $pipeline->hset($this->getHashKey(), 'updated', time());
+        $pipeline->hset($this->getHashKey(), self::ATTRIBUTE_UPDATED, time());
         $result = $pipeline->execute();
 
         return $this->attributes[$name] = $result[0];
@@ -200,10 +204,11 @@ class Status
      * properly updated.
      *
      * @param int $status The status of the job (see constants in Resque\Job\Status)
-     * @throws \InvalidArgumentException
-     * @return boolean
+     *
+     * @return bool
+     * @throws InvalidArgumentException
      */
-    public function update($status)
+    public function update(int $status): bool
     {
         if (!isset(self::$valid[$status])) {
             throw new InvalidArgumentException('Invalid status');
@@ -213,13 +218,16 @@ class Status
             return false;
         }
 
-        $this->attributes['status'] = $status;
-        $this->attributes['updated'] = time();
+        $this->attributes[self::ATTRIBUTE_STATUS]  = $status;
+        $this->attributes[self::ATTRIBUTE_UPDATED] = time();
 
-        $success = $this->client->hmset($this->getHashKey(), array(
-            'status'  => $this->attributes['status'],
-            'updated' => $this->attributes['updated']
-        ));
+        $success = $this->client->hmset(
+            $this->getHashKey(),
+            [
+                self::ATTRIBUTE_STATUS  => $this->attributes[self::ATTRIBUTE_STATUS],
+                self::ATTRIBUTE_UPDATED => $this->attributes[self::ATTRIBUTE_UPDATED],
+            ]
+        );
 
         // Delete completed jobs and set expire times for the rest.
         if ($status == self::STATUS_COMPLETE) {
@@ -230,23 +238,24 @@ class Status
             $this->client->expire($this->getHashKey(), self::INCOMPLETE_TTL);
         }
 
-        return (boolean)$success;
+        return (bool)$success;
     }
 
     /**
      * Check if we're actually checking the status of the loaded job status
      * instance.
      *
-     * @return boolean True if the status is being monitored, false if not.
+     * @return bool True if the status is being monitored, false if not.
      */
-    public function isTracking()
+    public function isTracking(): bool
     {
         if ($this->isTracking === null) {
-            $this->isTracking = (boolean)$this->client->exists($this->getHashKey());
+            $this->isTracking = (bool)$this->client->exists($this->getHashKey());
             if ($this->isTracking) {
                 $this->load();
             }
         }
+
         return $this->isTracking;
     }
 
@@ -258,7 +267,7 @@ class Status
     public function load()
     {
         if ($this->loaded) {
-            throw new \LogicException('The status is already loaded. Use another instance.');
+            throw new LogicException('The status is already loaded. Use another instance.');
         }
 
         $this->attributes = array_merge($this->attributes, $this->client->hgetall($this->getHashKey()));
@@ -266,7 +275,7 @@ class Status
     }
 
     /**
-     * @return array<string,mixed>
+     * @return mixed[]
      */
     public function getAll()
     {
@@ -280,17 +289,19 @@ class Status
     /**
      * Gets the time this status was updated
      */
-    public function getUpdated()
+    public function getUpdated(): ?int
     {
-        return $this->getAttribute('updated');
+        $updated = $this->getAttribute(self::ATTRIBUTE_UPDATED);
+        return $updated ? (int)$updated : null;
     }
 
     /**
      * Gets the time this status was created
      */
-    public function getCreated()
+    public function getCreated(): ?int
     {
-        return $this->getAttribute('created');
+        $created = $this->getAttribute(self::ATTRIBUTE_CREATED);
+        return $created ? (int)$created : null;
     }
 
     /**
@@ -298,36 +309,29 @@ class Status
      *
      * For consistency, this would be called getStatus(), but for BC, it's
      * just get().
-     *
-     * @return null|integer
      */
-    public function get()
+    public function get(): ?int
     {
-        return $this->getAttribute('status');
+        $status = $this->getAttribute(self::ATTRIBUTE_STATUS);
+        return $status ? (int)$status : null;
     }
 
-    /**
-     * @return string
-     */
-    public function getStatus()
+    public function getStatus(): string
     {
         $status = $this->get();
 
-        if (isset(self::$valid[$status])) {
-            return self::$valid[$status];
-        }
-
-        return 'unknown';
+        return self::$valid[$status] ?? 'unknown';
     }
 
     /**
      * Gets a single attribute value
      *
      * @param string $name
-     * @param mixed $default
+     * @param mixed  $default
+     *
      * @return mixed
      */
-    public function getAttribute($name, $default = null)
+    public function getAttribute(string $name, $default = null)
     {
         if ($this->loaded) {
             return isset($this->attributes[$name]) ? $this->attributes[$name] : $default;
@@ -335,15 +339,14 @@ class Status
 
         // Could be just hget, but Credis will return false?!
         $attributes = $this->client->hGetAll($this->getHashKey());
+
         return isset($attributes[$name]) ? $attributes[$name] : $default;
     }
 
     /**
      * Stop tracking the status of a job.
-     *
-     * @return void
      */
-    public function stop()
+    public function stop(): void
     {
         $this->client->del($this->getHashKey());
     }
@@ -352,10 +355,8 @@ class Status
      * A new key, because we're now using a hash format to store the status
      *
      * Used from outside this class to do status processing more efficiently
-     *
-     * @return string
      */
-    public function getHashKey()
+    public function getHashKey(): string
     {
         return 'job:' . $this->id . ':status/hash';
     }
@@ -363,7 +364,7 @@ class Status
     /**
      * Accessor to return valid statuses
      *
-     * @return array<int>
+     * @return int[]
      */
     public function getValid()
     {
@@ -373,7 +374,7 @@ class Status
     /**
      * Accessor to return complete statuses
      *
-     * @return array<int>
+     * @return int[]
      */
     public function getComplete()
     {
@@ -383,7 +384,7 @@ class Status
     /**
      * Convenience method to to check if a resque job has a complete status
      */
-    public function isComplete()
+    public function isComplete(): bool
     {
         return in_array($this->get(), self::$complete);
     }

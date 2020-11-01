@@ -1,45 +1,38 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Resque;
 
+use LogicException;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Resque\Client\ClientInterface;
 use Resque\Test\Settings;
 
 abstract class Test extends TestCase
 {
-    /**
-     * @var Settings
-     */
+    /** @var Settings */
     protected static $settings = null;
 
-    /**
-     * @var Resque
-     */
+    /** @var Resque */
     protected $resque;
 
-    /**
-     * @var ClientInterface
-     */
+    /** @var ClientInterface */
     protected $redis;
 
-    /**
-     * @var LoggerInterface
-     */
+    /** @var LoggerInterface */
     protected $logger;
 
-    /**
-     * @param Settings $settings
-     */
     public static function setSettings(Settings $settings)
     {
         self::$settings = $settings;
     }
 
-    public function setUp()
+    public function setUp(): void
     {
         if (!self::$settings) {
-            throw new \LogicException('You must supply the test case with a settings instance');
+            throw new LogicException('You must supply the test case with a settings instance');
         }
 
         $this->redis = self::$settings->getClient();
@@ -51,7 +44,7 @@ abstract class Test extends TestCase
         $this->resque->setLogger($this->logger);
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         if ($this->redis) {
             $this->redis->flushdb();
@@ -63,7 +56,7 @@ abstract class Test extends TestCase
         }
     }
 
-    protected function getWorker($queues)
+    protected function getWorker($queues): Worker
     {
         $worker = new Worker($this->resque, $queues);
         $worker->setLogger($this->logger);

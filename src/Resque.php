@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Resque;
 
+use InvalidArgumentException;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
@@ -9,10 +12,10 @@ use Psr\Log\NullLogger;
 use Resque\Client\ClientInterface;
 use Resque\Failure\BackendInterface;
 use Resque\Failure\RedisBackend;
-use Resque\Job;
 use Resque\Job\Status;
-use \InvalidArgumentException;
 use Resque\Job\StatusFactory;
+
+use function is_array;
 
 /**
  * Base Resque class
@@ -26,9 +29,9 @@ class Resque implements LoggerAwareInterface
      *
      * @var string
      */
-    const QUEUE_KEY   = 'queue:';
-    const QUEUES_KEY  = 'queues';
-    const WORKERS_KEY = 'workers';
+    public const QUEUE_KEY   = 'queue:';
+    public const QUEUES_KEY  = 'queues';
+    public const WORKERS_KEY = 'workers';
     /**#@-*/
 
     /**
@@ -37,7 +40,7 @@ class Resque implements LoggerAwareInterface
     private $client;
 
     /**
-     * @var array<string,mixed>
+     * @var mixed[]
      */
     protected $options;
 
@@ -58,9 +61,10 @@ class Resque implements LoggerAwareInterface
 
     /**
      * Constructor
-     * @param ClientInterface $client
+     *
+     * @param ClientInterface $client //fake interface, instances will not actually implement this!
      */
-    public function __construct($client, array $options = array())
+    public function __construct($client, array $options = [])
     {
         $this->client = $client;
         $this->logger = new NullLogger();
@@ -71,17 +75,19 @@ class Resque implements LoggerAwareInterface
     /**
      * Configures the options of the resque background queue system
      *
-     * @param array<string,mixed> $options
-     * @return void
+     * @param mixed[] $options
      */
-    public function configure(array $options)
+    public function configure(array $options): void
     {
-        $this->options = array_merge(array(
-            'pgrep'           => 'pgrep -f',
-            'pgrep_pattern'   => '[r]esque[^-]',
-            'prefix'          => 'resque:',
-            'statistic_class' => 'Resque\Statistic'
-        ), $options);
+        $this->options = array_merge(
+            [
+                'pgrep'           => 'pgrep -f',
+                'pgrep_pattern'   => '[r]esque[^-]',
+                'prefix'          => 'resque:',
+                'statistic_class' => 'Resque\Statistic',
+            ],
+            $options
+        );
     }
 
     /**
@@ -97,18 +103,12 @@ class Resque implements LoggerAwareInterface
         return $this->client;
     }
 
-    /**
-     * @param \Resque\Failure\BackendInterface $backend
-     */
     public function setFailureBackend(BackendInterface $backend)
     {
         $this->failures = $backend;
     }
 
-    /**
-     * @return BackendInterface
-     */
-    public function getFailureBackend()
+    public function getFailureBackend(): BackendInterface
     {
         if (!isset($this->failures)) {
             $this->failures = new RedisBackend();
@@ -117,18 +117,12 @@ class Resque implements LoggerAwareInterface
         return $this->failures;
     }
 
-    /**
-     * @param StatusFactory $factory
-     */
     public function setStatusFactory(StatusFactory $factory)
     {
         $this->statuses = $factory;
     }
 
-    /**
-     * @return StatusFactory
-     */
-    public function getStatusFactory()
+    public function getStatusFactory(): StatusFactory
     {
         if (!isset($this->statuses)) {
             $this->statuses = new StatusFactory($this);
@@ -139,10 +133,8 @@ class Resque implements LoggerAwareInterface
 
     /**
      * Causes the client to reconnect to the Redis server
-     *
-     * @return void
      */
-    public function reconnect()
+    public function reconnect(): void
     {
         if ($this->client->isConnected()) {
             $this->client->disconnect();
@@ -153,7 +145,7 @@ class Resque implements LoggerAwareInterface
     /**
      * Causes the client to connect to the Redis server
      */
-    public function connect()
+    public function connect(): void
     {
         $this->client->connect();
     }
@@ -161,30 +153,20 @@ class Resque implements LoggerAwareInterface
     /**
      * Disconnects the client from the Redis server
      */
-    public function disconnect()
+    public function disconnect(): void
     {
         $this->client->disconnect();
     }
 
-    /**
-     * Logs a message
-     *
-     * @param string $message
-     * @param string $priority
-     * @return void
-     */
-    public function log($message, $priority = LogLevel::INFO)
+    public function log(string $message, string $priority = LogLevel::INFO): void
     {
         $this->logger->log($message, $priority);
     }
 
     /**
      * Gets a namespaced/prefixed key for the given key suffix
-     *
-     * @param string $key
-     * @return string
      */
-    public function getKey($key)
+    public function getKey(string $key): string
     {
         return $this->options['prefix'] . $key;
     }
@@ -194,9 +176,9 @@ class Resque implements LoggerAwareInterface
      * exist, then create it as well.
      *
      * @param string $queue The name of the queue to add the job to.
-     * @param array $item Job description as an array to be JSON encoded.
+     * @param array  $item  Job description as an array to be JSON encoded.
      */
-    public function push($queue, $item)
+    public function push(string $queue, array $item)
     {
         // Add the queue to the list of queues
         $this->getClient()->sadd($this->getKey(self::QUEUES_KEY), $queue);
@@ -210,9 +192,10 @@ class Resque implements LoggerAwareInterface
      * return it.
      *
      * @param string $queue The name of the queue to fetch an item from.
-     * @return array Decoded item from the queue.
+     *
+     * @return array|null Decoded item from the queue.
      */
-    public function pop($queue)
+    public function pop(string $queue): ?array
     {
         $item = $this->getClient()->lpop($this->getKey(self::QUEUE_KEY . $queue));
 
@@ -225,10 +208,8 @@ class Resque implements LoggerAwareInterface
 
     /**
      * Clears the whole of a queue
-     *
-     * @param string $queue
      */
-    public function clearQueue($queue)
+    public function clearQueue(string $queue)
     {
         $this->getClient()->del($this->getKey(self::QUEUE_KEY . $queue));
     }
@@ -236,11 +217,11 @@ class Resque implements LoggerAwareInterface
     /**
      * Return the size (number of pending jobs) of the specified queue.
      *
-     * @param $queue name of the queue to be checked for pending jobs
+     * @param string $queue name of the queue to be checked for pending jobs
      *
      * @return int The size of the queue.
      */
-    public function size($queue)
+    public function size(string $queue): int
     {
         return $this->getClient()->llen($this->getKey(self::QUEUE_KEY . $queue));
     }
@@ -248,28 +229,26 @@ class Resque implements LoggerAwareInterface
     /**
      * Create a new job and save it to the specified queue.
      *
-     * @param string $queue The name of the queue to place the job in.
-     * @param string $class The name of the class that contains the code to execute the job.
-     * @param array $args Any optional arguments that should be passed when the job is executed.
-     * @param boolean $trackStatus Set to true to be able to monitor the status of a job.
-     * @throws \InvalidArgumentException
+     * @param string  $queue       The name of the queue to place the job in.
+     * @param string  $class       The name of the class that contains the code to execute the job.
+     * @param null    $args        Any optional arguments that should be passed when the job is executed.
+     * @param bool $trackStatus Set to true to be able to monitor the status of a job.
+     *
      * @return string
+     * @throws InvalidArgumentException
      */
-    public function enqueue($queue, $class, $args = null, $trackStatus = false)
+    public function enqueue(string $queue, string $class, ?array $args = null, bool $trackStatus = false): string
     {
-        if ($args !== null && !is_array($args)) {
-            throw new InvalidArgumentException(
-                'Supplied $args must be an array.'
-            );
-        }
-
         $id = md5(uniqid('', true));
 
-        $this->push($queue, array(
-            'class' => $class,
-            'args'  => $args,
-            'id'    => $id,
-        ));
+        $this->push(
+            $queue,
+            [
+                'class' => $class,
+                'args'  => $args,
+                'id'    => $id,
+            ]
+        );
 
         if ($trackStatus) {
             $status = new Status($id, $this);
@@ -282,9 +261,9 @@ class Resque implements LoggerAwareInterface
     /**
      * Get an array of all known queues.
      *
-     * @return array<string>
+     * @return string[]
      */
-    public function queues()
+    public function queues(): array
     {
         return $this->getSetMembers(self::QUEUES_KEY);
     }
@@ -292,33 +271,14 @@ class Resque implements LoggerAwareInterface
     /**
      * Gets an array of all known worker IDs
      *
-     * @return array<string>
+     * @return string[]
      */
-    public function getWorkerIds()
+    public function getWorkerIds(): array
     {
         return $this->getSetMembers(self::WORKERS_KEY);
     }
 
-    /**
-     * @param string $suffix Partial key (don't pass to getKey() - let this method do it for you)
-     * @return array<string>
-     */
-    protected function getSetMembers($suffix)
-    {
-        $members = $this->getClient()->smembers($this->getKey($suffix));
-
-        if (!is_array($members)) {
-            $members = array();
-        }
-
-        return $members;
-    }
-
-    /**
-     * @param string $id Worker ID
-     * @return bool
-     */
-    public function workerExists($id)
+    public function workerExists(string $id): bool
     {
         return in_array($id, $this->getWorkerIds());
     }
@@ -330,13 +290,13 @@ class Resque implements LoggerAwareInterface
      * Expects pgrep to be in the path, and for it to inspect full argument
      * lists using -f
      *
-     * @return array Array of Resque worker process IDs.
+     * @return int[] Array of Resque worker process IDs.
      */
-    public function getWorkerPids()
+    public function getWorkerPids(): array
     {
         $command = $this->options['pgrep'] . ' ' . escapeshellarg($this->options['pgrep_pattern']);
 
-        $pids = array();
+        $pids   = [];
         $output = null;
         $return = null;
 
@@ -351,7 +311,8 @@ class Resque implements LoggerAwareInterface
          */
         if (($return !== 0 && $return !== 1) || empty($output) || !is_array($output)) {
             $this->logger->warning('Unable to determine worker PIDs');
-            return array();
+
+            return [];
         }
 
         foreach ($output as $line) {
@@ -367,31 +328,34 @@ class Resque implements LoggerAwareInterface
         return $pids;
     }
 
-    /**
-     * Gets a statistic
-     *
-     * @param string $name
-     * @return \Resque\Statistic
-     */
-    public function getStatistic($name)
+    public function getStatistic(string $name): Statistic
     {
         return new Statistic($this, $name);
     }
 
-    /**
-     * @param LoggerInterface $logger
-     * @return void
-     */
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
     }
 
-    /**
-     * @return LoggerInterface
-     */
-    public function getLogger()
+    public function getLogger(): LoggerInterface
     {
         return $this->logger;
+    }
+
+    /**
+     * @param string $suffix Partial key (don't pass to getKey() - let this method do it for you)
+     *
+     * @return string[]
+     */
+    protected function getSetMembers(string $suffix): array
+    {
+        $members = $this->getClient()->smembers($this->getKey($suffix));
+
+        if (!is_array($members)) {
+            $members = [];
+        }
+
+        return $members;
     }
 }

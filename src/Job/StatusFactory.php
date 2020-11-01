@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Resque\Job;
 
 use Resque\Exception\JobIdException;
@@ -18,21 +20,15 @@ class StatusFactory
         $this->resque = $resque;
     }
 
-    /**
-     * @param String $id
-     * @return \Resque\Job\Status
-     */
-    public function forId($id)
+    public function forId(string $id): Status
     {
         return new Status($id, $this->resque);
     }
 
     /**
-     * @param JobInterface $job
-     * @return Status
-     * @throws \Resque\Exception\JobIdException
+     * @throws JobIdException
      */
-    public function forJob(JobInterface $job)
+    public function forJob(JobInterface $job): Status
     {
         $payload = $job->getPayload();
 

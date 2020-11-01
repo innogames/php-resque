@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Resque\Console;
 
 use Psr\Log\LoggerInterface;
 use Resque\Client\ClientInterface;
+use Resque\Console\Helper\LoggerHelper;
+use Resque\Console\Helper\RedisHelper;
 use Resque\Version;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Helper\HelperSet;
-use Resque\Console\Helper\RedisHelper;
-use Resque\Console\Helper\LoggerHelper;
 
 class ConsoleRunner
 {
@@ -17,11 +19,10 @@ class ConsoleRunner
      *
      * A convenience method (you could always define your own HelperSet separately). Useful for writing cli-config.php.
      *
-     * @param ClientInterface          $client Redis connection
-     * @param \Psr\Log\LoggerInterface $logger Optional logger
-     * @return HelperSet
+     * @param ClientInterface $client Redis connection
+     * @param LoggerInterface $logger Optional logger
      */
-    public static function createHelperSet($client, LoggerInterface $logger = null)
+    public static function createHelperSet($client, LoggerInterface $logger = null): HelperSet
     {
         $helper = new HelperSet();
         $helper->set(new RedisHelper($client));
@@ -42,9 +43,10 @@ class ConsoleRunner
      * calling this method (the actual bin command file).
      *
      * @param HelperSet $helperSet
+     *
      * @return integer 0 if everything went fine, or an error code
      */
-    public static function run(HelperSet $helperSet)
+    public static function run(HelperSet $helperSet): int
     {
         $application = new Application('Resque Console Tool', Version::VERSION);
         $application->setCatchExceptions(true);

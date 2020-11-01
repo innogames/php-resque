@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Resque\Console\Helper;
 
 use Resque\Client\ClientInterface;
@@ -31,10 +33,7 @@ class RedisHelper extends Helper
         return $this->client;
     }
 
-    /**
-     * @return string
-     */
-    public function getName()
+    public function getName(): string
     {
         return 'redis';
     }

@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Resque;
 
 class Version
 {
-    const VERSION = '2.1.x';
+    public const VERSION = '4.0.x';
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Resque\Console;
 
 use Symfony\Component\Console\Input\InputArgument;
@@ -11,7 +13,7 @@ class QueueClearCommand extends Command
     /**
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         parent::configure();
 
@@ -28,17 +30,19 @@ class QueueClearCommand extends Command
     /**
      * @param InputInterface  $input
      * @param OutputInterface $output
+     *
      * @return int
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $resque = $this->getResque($output);
-        $queue = $input->getArgument('queue');
+        $queue  = $input->getArgument('queue');
 
         $cleared = $resque->size($queue);
         $resque->clearQueue($queue);
 
         $output->writeln('Cleared ' . $cleared . ' jobs on queue ' . $queue);
+
         return 0;
     }
 }

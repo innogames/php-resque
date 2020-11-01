@@ -1,26 +1,47 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Resque\Test;
 
+use InvalidArgumentException;
+use Predis\Client as PredisClient;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
-use Resque\ClientInterface;
+use Resque\Client\ClientInterface;
+use Resque\Client\CredisClient as CredisClient;
 use RuntimeException;
+
+use const DIRECTORY_SEPARATOR;
 
 class Settings implements LoggerAwareInterface
 {
+    /** @var string */
     protected $clientType;
+
+    /** @var string */
     protected $host;
+
+    /** @var string */
     protected $bind;
+
+    /** @var string */
     protected $port;
+
+    /** @var int */
     protected $db;
+
+    /** @var string */
     protected $prefix;
+
+    /** @var string */
     protected $buildDir;
 
-    /**
-     * @var LoggerInterface
-     */
+    /** @var LoggerInterface */
     protected $logger;
+
+    /** @var int */
+    protected $testPid;
 
     public function __construct()
     {
@@ -41,7 +62,7 @@ class Settings implements LoggerAwareInterface
 
     public function fromEnvironment()
     {
-        $env = array(
+        $env = [
             'client_type' => 'clientType',
             'host'        => 'host',
             'port'        => 'port',
@@ -49,8 +70,8 @@ class Settings implements LoggerAwareInterface
             'build_dir'   => 'buildDir',
             'run'         => 'run',
             'db'          => 'db',
-            'prefix'      => 'prefix'
-        );
+            'prefix'      => 'prefix',
+        ];
 
         foreach ($env as $var => $setting) {
             $name = 'RESQUE_' . strtoupper($var);
@@ -61,28 +82,28 @@ class Settings implements LoggerAwareInterface
         }
     }
 
-    public function setBuildDir($dir)
+    public function setBuildDir(string $dir)
     {
         $this->buildDir = $dir;
     }
 
-    public function startRedis()
+    public function startRedis(): void
     {
         $this->dumpRedisConfig();
         $this->registerShutdown();
 
-        $this->logger->notice('Starting redis server in {buildDir}', array('buildDir' => $this->buildDir));
+        $this->logger->notice('Starting redis server in {buildDir}', ['buildDir' => $this->buildDir]);
         exec('cd ' . $this->buildDir . '; redis-server ' . $this->buildDir . '/redis.conf', $output, $return);
         usleep(500000);
 
         if ($return != 0) {
-            throw new \RuntimeException('Cannot start redis-server');
+            throw new RuntimeException('Cannot start redis-server');
         }
     }
 
-    protected function getRedisConfig()
+    protected function getRedisConfig(): array
     {
-        return array(
+        return [
             'daemonize'  => 'yes',
             'pidfile'    => './redis.pid',
             'port'       => $this->port,
@@ -91,45 +112,50 @@ class Settings implements LoggerAwareInterface
             'dbfilename' => 'dump.rdb',
             'dir'        => $this->buildDir,
             'loglevel'   => 'debug',
-            'logfile'    => './redis.log'
-        );
+            'logfile'    => './redis.log',
+        ];
     }
 
     /**
-     * @return ClientInterface
-     * @throws \InvalidArgumentException
+     * @return ClientInterface //fake interface to represent expected methods on the actually returned clients
+     * @throws InvalidArgumentException
      */
     public function getClient()
     {
         switch ($this->clientType) {
             case 'predis':
-                return new \Predis\Client(array(
-                    'host'   => $this->host,
-                    'port'   => $this->port,
-                    'db'     => $this->db,
-                    'prefix' => $this->prefix
-                ));
+                return new PredisClient(
+                    [
+                        'host'   => $this->host,
+                        'port'   => $this->port,
+                        'db'     => $this->db,
+                        'prefix' => $this->prefix,
+                    ]
+                );
             case 'phpiredis':
-                return new \Predis\Client(array(
-                    'host'   => $this->host,
-                    'port'   => $this->port,
-                    'db'     => $this->db,
-                    'prefix' => $this->prefix
-                ), array(
-                    'tcp'  => 'Predis\Connection\PhpiredisStreamConnection',
-                    'unix' => 'Predis\Connection\PhpiredisSocketConnection'
-                ));
+                return new PredisClient(
+                    [
+                        'host'   => $this->host,
+                        'port'   => $this->port,
+                        'db'     => $this->db,
+                        'prefix' => $this->prefix,
+                    ], [
+                        'tcp'  => 'Predis\Connection\PhpiredisStreamConnection',
+                        'unix' => 'Predis\Connection\PhpiredisSocketConnection',
+                    ]
+                );
             case 'credis':
             case 'phpredis':
-                $client = new \Resque\Client\CredisClient($this->host, $this->port);
+                $client = new CredisClient($this->host, $this->port);
                 $client->setCloseOnDestruct(false);
+
                 return $client;
             default:
-                throw new \InvalidArgumentException('Invalid or unknown client type: ' . $this->clientType);
+                throw new InvalidArgumentException('Invalid or unknown client type: ' . $this->clientType);
         }
     }
 
-    public function checkBuildDir()
+    public function checkBuildDir(): void
     {
         if (!is_dir($this->buildDir)) {
             mkdir($this->buildDir);
@@ -140,7 +166,7 @@ class Settings implements LoggerAwareInterface
         }
     }
 
-    protected function dumpRedisConfig()
+    protected function dumpRedisConfig(): void
     {
         $file = $this->buildDir . '/redis.conf';
         $conf = '';
@@ -149,36 +175,45 @@ class Settings implements LoggerAwareInterface
             $conf .= "$name $value\n";
         }
 
-        $this->logger->info('Dumping redis config {config} to {file}', array('file' => $file, 'config' => $conf));
+        $this->logger->info('Dumping redis config {config} to {file}', ['file' => $file, 'config' => $conf]);
         file_put_contents($file, $conf);
     }
 
-    // Override INT and TERM signals, so they do a clean shutdown and also
-    // clean up redis-server as well.
-    public function catchSignals()
+    /**
+     * Override INT and TERM signals, so they do a clean shutdown and also
+     * clean up redis-server as well.
+     */
+    public function catchSignals(): void
     {
         if (function_exists('pcntl_signal')) {
             $self = $this;
-            pcntl_signal(SIGINT, function () use ($self) {
-                $self->logger->debug('SIGINT received');
-                exit;
-            });
+            pcntl_signal(
+                SIGINT,
+                function () use ($self) {
+                    $self->logger->debug('SIGINT received');
+                    exit;
+                }
+            );
 
-            pcntl_signal(SIGTERM, function () use ($self) {
-                $self->logger->debug('SIGTERM received');
-                exit;
-            });
+            pcntl_signal(
+                SIGTERM,
+                function () use ($self) {
+                    $self->logger->debug('SIGTERM received');
+                    exit;
+                }
+            );
         }
     }
 
-    public function killRedis()
+    public function killRedis(): void
     {
         $pid = getmypid();
 
-        $this->logger->notice('Attempting to kill redis from {pid}', array('pid' => $pid));
+        $this->logger->notice('Attempting to kill redis from {pid}', ['pid' => $pid]);
 
         if ($pid === null || $this->testPid !== $pid) {
             $this->logger->warning('Refusing to kill redis from forked worker');
+
             return; // don't kill from a forked worker
         }
 
@@ -186,9 +221,9 @@ class Settings implements LoggerAwareInterface
 
         if (file_exists($pidFile)) {
             $pid = trim(file_get_contents($pidFile));
-            posix_kill((int) $pid, 9);
+            posix_kill((int)$pid, 9);
 
-            if(is_file($pidFile)) {
+            if (is_file($pidFile)) {
                 unlink($pidFile);
             }
         }
@@ -200,27 +235,21 @@ class Settings implements LoggerAwareInterface
         }
     }
 
-    protected function registerShutdown()
+    protected function registerShutdown(): void
     {
         $this->logger->info('Registered shutdown function');
-        register_shutdown_function(array($this, 'killRedis'));
+        register_shutdown_function([$this, 'killRedis']);
     }
 
     /**
      * Sets a logger instance on the object
-     *
-     * @param LoggerInterface $logger
-     * @return null
      */
     public function setLogger(LoggerInterface $logger)
     {
         $this->logger = $logger;
     }
 
-    /**
-     * @return LoggerInterface
-     */
-    public function getLogger()
+    public function getLogger(): LoggerInterface
     {
         return $this->logger;
     }
@@ -232,10 +261,10 @@ class Settings implements LoggerAwareInterface
      */
     public function dumpConfig()
     {
-        $file = $this->buildDir . \DIRECTORY_SEPARATOR . 'settings.json';
+        $file   = $this->buildDir . DIRECTORY_SEPARATOR . 'settings.json';
         $config = json_encode(get_object_vars($this), JSON_PRETTY_PRINT);
 
-        $this->logger->info('Dumping test config {config} to {file}', array('file' => $file, 'config' => $config));
+        $this->logger->info('Dumping test config {config} to {file}', ['file' => $file, 'config' => $config]);
         file_put_contents($file, $config);
     }
 }

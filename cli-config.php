@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * CLI Config file
  *
@@ -19,14 +21,19 @@
  * Configure the client however you'd like, here. Or, you could
  * grab it from your application's service/injection container.
  */
-use Predis\Client;
 
-/* @var \Resque\Client\ClientInterface $predis */
-$predis = new Client(array(
-    'scheme' => 'tcp',
-    'host'   => '127.0.0.1',
-    'port'   => 6379
-));
+use Predis\Client;
+use Resque\Client\ClientInterface;
+use Resque\Console\ConsoleRunner;
+
+/* @var ClientInterface $predis */
+$predis = new Client(
+    [
+        'scheme' => 'tcp',
+        'host'   => '127.0.0.1',
+        'port'   => 6379,
+    ]
+);
 
 /*
  * You can optionally customize the PSR3 logger used on the CLI. The
@@ -35,4 +42,4 @@ $predis = new Client(array(
  * $logger = new Monolog\Logger('resque');
  */
 
-return \Resque\Console\ConsoleRunner::createHelperSet($predis/*, $logger*/);
+return ConsoleRunner::createHelperSet($predis/*, $logger*/);

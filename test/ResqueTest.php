@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Resque;
 
 class ResqueTest extends Test
@@ -11,11 +13,11 @@ class ResqueTest extends Test
 
     public function testEmptyWorkerIds()
     {
-        $this->assertInternalType('array', $this->resque->getWorkerIds());
+        $this->assertIsArray($this->resque->getWorkerIds());
     }
 
     public function testEmptyWorkerPids()
     {
-        $this->assertInternalType('array', $this->resque->getWorkerPids());
+        $this->assertIsArray($this->resque->getWorkerPids());
     }
 }

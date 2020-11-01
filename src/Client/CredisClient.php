@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Resque\Client;
 
 use Credis_Client;
@@ -18,7 +20,7 @@ class CredisClient extends Credis_Client
      *
      * @return bool
      */
-    public function isConnected()
+    public function isConnected(): bool
     {
         return $this->connected;
     }
@@ -26,7 +28,7 @@ class CredisClient extends Credis_Client
     /**
      * Disconnects the client
      */
-    public function disconnect()
+    public function disconnect(): void
     {
         $this->close();
     }
@@ -34,8 +36,8 @@ class CredisClient extends Credis_Client
     /**
      * Alias to exec() for pipeline compatibility with Predis
      */
-    public function execute()
+    public function execute(): void
     {
-        $this->__call('exec', array());
+        $this->__call('exec', []);
     }
 }

@@ -1,5 +1,10 @@
 ## Forked version to add namespacing
 
+### 4.0.0 ##
+* Introduced strict types where possible
+* Added support for PHP 8
+* Dropped support for PHP versions < 7.3
+
 ### 3.0.2 ##
 
 * Remove upper bound on supported symfony/console version to support Symfony v3 and v4 based projects

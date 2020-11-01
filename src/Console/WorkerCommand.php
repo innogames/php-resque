@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Resque\Console;
 
 use Resque\Worker;
@@ -12,7 +14,7 @@ class WorkerCommand extends Command
     /**
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         parent::configure();
 
@@ -39,12 +41,14 @@ class WorkerCommand extends Command
      * @param OutputInterface $output
      * @return int
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $resque = $this->getResque($output);
         $queues = $input->getOption('queue');
 
         $worker = new Worker($resque, $queues);
-        $worker->work($input->getOption('interval'));
+        $worker->work((int)$input->getOption('interval'));
+
+        return 0;
     }
 }

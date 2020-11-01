@@ -1,39 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Resque\Test;
 
 use Resque\AbstractJob;
+use Resque\Job\Status;
 
 class Job extends AbstractJob
 {
     public $performed = false;
 
-    public function perform()
+    public function perform(): void
     {
         $this->performed = true;
     }
 
     /**
-     * @return int See Resque\Job\Status::STATUS_*
+     * @see Status
      */
-    public function getStatusCode()
+    public function getStatusCode(): ?int
     {
         return $this->getStatus()->get();
-    }
-
-    /**
-     * @return string ID of the recreated job
-     */
-    public function recreate()
-    {
-        return parent::recreate();
-    }
-
-    /**
-     * @return \Resque\Job\Status
-     */
-    public function getStatus()
-    {
-        return parent::getStatus();
     }
 }
