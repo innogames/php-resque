@@ -1,20 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Resque;
 
-use \ArrayAccess;
-use \ArrayIterator;
-use \InvalidArgumentException;
-use \IteratorAggregate;
+use ArrayAccess;
+use ArrayIterator;
+use InvalidArgumentException;
+use IteratorAggregate;
 use Resque\Exception\JobLogicException;
 use Resque\Job\Status;
-use Resque\Resque;
 
 /**
  * Resque job.
  *
  * @package        Resque/Job
- * @author        Chris Boulton <chris@bigcommerce.com>
+ * @author         Chris Boulton <chris@bigcommerce.com>
  * @license        http://www.opensource.org/licenses/mit-license.php
  */
 abstract class AbstractJob implements ArrayAccess, IteratorAggregate, JobInterface
@@ -42,20 +43,17 @@ abstract class AbstractJob implements ArrayAccess, IteratorAggregate, JobInterfa
     /**
      * Instantiate a new instance of a job.
      *
-     * @param string $queue The queue that the job belongs to.
-     * @param array $payload array containing details of the job.
+     * @param string $queue   The queue that the job belongs to.
+     * @param array  $payload array containing details of the job.
      */
-    public function __construct($queue, array $payload)
+    public function __construct(string $queue, array $payload)
     {
-        $this->queue = $queue;
+        $this->queue   = $queue;
         $this->payload = $payload;
-        $this->id = isset($payload['id']) ? $payload['id'] : null;
+        $this->id      = isset($payload['id']) ? $payload['id'] : null;
     }
 
-    /**
-     * @param Resque $resque
-     */
-    public function setResque(Resque $resque)
+    public function setResque(Resque $resque): void
     {
         $this->resque = $resque;
     }
@@ -63,7 +61,7 @@ abstract class AbstractJob implements ArrayAccess, IteratorAggregate, JobInterfa
     /**
      * @return string
      */
-    public function getQueue()
+    public function getQueue(): string
     {
         return $this->queue;
     }
@@ -73,9 +71,8 @@ abstract class AbstractJob implements ArrayAccess, IteratorAggregate, JobInterfa
      *
      * @throws InvalidArgumentException
      * @throws JobLogicException
-     * @return \Resque\Job\Status
      */
-    protected function getStatus()
+    public function getStatus(): Status
     {
         if (!$this->resque) {
             throw new JobLogicException('Job has no Resque instance: cannot get status');
@@ -84,31 +81,24 @@ abstract class AbstractJob implements ArrayAccess, IteratorAggregate, JobInterfa
         return $this->resque->getStatusFactory()->forJob($this);
     }
 
-    public function getId()
+    public function getId(): string
     {
         return $this->id;
     }
 
-    public function getPayload()
+    public function getPayload(): array
     {
         return $this->payload;
     }
-
-    /**
-     * Execute the job
-     *
-     * @return bool
-     */
-    abstract public function perform();
 
     /**
      * Re-queue the current job.
      *
      * @return string ID of the recreated job
      */
-    public function recreate()
+    public function recreate(): string
     {
-        $status = $this->getStatus();
+        $status   = $this->getStatus();
         $tracking = $status->isTracking();
 
         $new = $this->resque->enqueue(
@@ -133,17 +123,17 @@ abstract class AbstractJob implements ArrayAccess, IteratorAggregate, JobInterfa
      */
     public function __toString()
     {
-        $name = array(
-            'Job{' . $this->queue .'}'
-        );
+        $name = [
+            'Job{' . $this->queue . '}',
+        ];
 
-        if(!empty($this->id)) {
+        if (!empty($this->id)) {
             $name[] = 'ID: ' . $this->id;
         }
 
         $name[] = $this->payload['class'];
 
-        if(!empty($this->payload['args'])) {
+        if (!empty($this->payload['args'])) {
             $name[] = json_encode($this->payload['args']);
         }
 
@@ -191,6 +181,6 @@ abstract class AbstractJob implements ArrayAccess, IteratorAggregate, JobInterfa
      */
     public function getIterator()
     {
-        return new \ArrayIterator($this->payload);
+        return new ArrayIterator($this->payload);
     }
 }

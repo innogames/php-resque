@@ -1,16 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Resque\Failure;
 
-use \Exception;
+use Exception;
 use Resque\Worker;
-use \stdClass;
+use stdClass;
 
 /**
  * Redis backend for storing failed Resque jobs.
  *
  * @package        Resque/Failure
- * @author        Chris Boulton <chris@bigcommerce.com>
+ * @author         Chris Boulton <chris@bigcommerce.com>
  * @license        http://www.opensource.org/licenses/mit-license.php
  */
 class RedisBackend implements BackendInterface
@@ -18,14 +20,14 @@ class RedisBackend implements BackendInterface
     /**
      * Initialize a failed job class and save it (where appropriate).
      *
-     * @param object $payload Object containing details of the failed job.
+     * @param array     $payload   Object containing details of the failed job.
      * @param Exception $exception Instance of the exception that was thrown by the failed job.
-     * @param Worker $worker Instance of Worker that received the job.
-     * @param string $queue The name of the queue the job was fetched from.
+     * @param Worker    $worker    Instance of Worker that received the job.
+     * @param string    $queue     The name of the queue the job was fetched from.
      */
-    public function receiveFailure($payload, Exception $exception, Worker $worker, $queue)
+    public function receiveFailure(array $payload, Exception $exception, Worker $worker, string $queue): void
     {
-        $data = new stdClass;
+        $data            = new stdClass();
         $data->failed_at = strftime('%a %b %d %H:%M:%S %Z %Y');
         $data->payload   = $payload;
         $data->exception = $this->getClass($exception);
@@ -45,12 +47,13 @@ class RedisBackend implements BackendInterface
      * multiple lines by resque-web. So, we'll also use it to mention the
      * wrapping exceptions.
      *
-     * @param \Exception $exception
+     * @param Exception $exception
+     *
      * @return array
      */
-    protected function getBacktrace(\Exception $exception)
+    protected function getBacktrace(Exception $exception): array
     {
-        $backtrace = array();
+        $backtrace = [];
 
         $backtrace[] = '---';
         $backtrace[] = $this->getErrorMessage($exception);
@@ -63,7 +66,7 @@ class RedisBackend implements BackendInterface
             $backtrace = array_merge($backtrace, explode("\n", $exception->getTraceAsString()));
         }
 
-        if (($previous = $exception->getPrevious())) {
+        if ($previous = $exception->getPrevious()) {
             $backtrace = array_merge($backtrace, $this->getBacktrace($previous)); // Recurse
         }
 
@@ -72,15 +75,13 @@ class RedisBackend implements BackendInterface
 
     /**
      * Find the ultimate cause exception, by following previous members right back
-     *
-     * @param Exception $exception
-     * @return Exception
      */
-    protected function getDistalCause(\Exception $exception)
+    protected function getDistalCause(Exception $exception): Exception
     {
-        if (($previous = $exception->getPrevious())) {
+        if ($previous = $exception->getPrevious()) {
             return $this->getDistalCause($previous);
         }
+
         return $exception;
     }
 
@@ -88,13 +89,14 @@ class RedisBackend implements BackendInterface
      * Find the class names of the exceptions
      *
      * @param Exception $exception
+     *
      * @return string
      */
-    protected function getClass(\Exception $exception)
+    protected function getClass(Exception $exception): string
     {
         $message = '';
 
-        if (($previous = $exception->getPrevious())) {
+        if ($previous = $exception->getPrevious()) {
             $message = $this->getClass($previous) . ' < '; // Recurse
         }
 
@@ -110,11 +112,8 @@ class RedisBackend implements BackendInterface
 
     /**
      * Gets a single string error message from the exception
-     *
-     * @param \Exception $exception
-     * @return string
      */
-    protected function getErrorMessage(\Exception $exception)
+    protected function getErrorMessage(Exception $exception): string
     {
         return $exception->getMessage() . ' at ' . $exception->getFile() . ':' . $exception->getLine();
     }

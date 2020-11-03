@@ -1,8 +1,8 @@
 <?php
 
-namespace Resque;
+declare(strict_types=1);
 
-use \Exception;
+namespace Resque;
 
 /**
  * JobInterface
@@ -12,29 +12,14 @@ use \Exception;
  */
 interface JobInterface
 {
-    /**
-     * Constructor
-     *
-     * @param string $queue
-     * @param array $payload
-     * @return void
-     */
-    public function __construct($queue, array $payload);
+    public function __construct(string $queue, array $payload);
 
     /**
      * Actually performs the work of the job
-     *
-     * @return void
      */
-    public function perform();
+    public function perform(): void;
 
-    /**
-     * @return string
-     */
-    public function getQueue();
+    public function getQueue(): string;
 
-    /**
-     * @return array
-     */
-    public function getPayload();
+    public function getPayload(): array;
 }

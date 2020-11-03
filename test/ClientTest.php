@@ -1,17 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Resque;
 
 class ClientTest extends Test
 {
     public function testHashFunctions()
     {
-        $values = array(
+        $values = [
             'one'   => 'abc',
             'two'   => 'def',
             'three' => 123,
             'four'  => 1.0 / 3
-        );
+        ];
 
         $success  = $this->redis->hmset('some_other_key', $values);
         $hash     = $this->redis->hgetall('some_other_key');

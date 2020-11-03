@@ -28,17 +28,17 @@ interface ClientInterface
     public function pipeline();
 
     /**
-     * @return boolean|\Predis\Response\ResponseInterface
+     * @return bool|\Predis\Response\ResponseInterface
      */
     public function execute();
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isConnected();
 
     /**
-     * @param integer $db
+     * @param int $db
      */
     public function flushdb($db = null);
 
@@ -67,19 +67,19 @@ interface ClientInterface
 
     /**
      * @param string  $key
-     * @param integer $ttl
+     * @param int $ttl
      */
     public function expire($key, $ttl);
 
     /**
      * @param string  $key
-     * @param integer $increment
+     * @param int $increment
      */
     public function incrby($key, $increment);
 
     /**
      * @param string  $key
-     * @param integer $decrement
+     * @param int $decrement
      */
     public function decrby($key, $decrement);
 
@@ -133,22 +133,22 @@ interface ClientInterface
 
     /**
      * @param string $key
-     * @return array<string,mixed>
+     * @return mixed[]
      */
     public function hgetall($key);
 
     /**
      * @param string $key
      * @param array  $hash
-     * @return boolean|\Predis\Response\ResponseInterface
+     * @return bool|\Predis\Response\ResponseInterface
      */
     public function hmset($key, array $hash);
 
     /**
      * @param string $key
      * @param string $field
-     * @param integer $increment
-     * @return integer The value at field after the increment operation
+     * @param int $increment
+     * @return int The value at field after the increment operation
      */
     public function hincrby($key, $field, $increment);
 }

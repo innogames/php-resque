@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Resque\Console\Helper;
 
 use Psr\Log\LoggerInterface;
@@ -15,26 +17,17 @@ class LoggerHelper extends Helper
      */
     protected $logger;
 
-    /**
-     * @param LoggerInterface $logger
-     */
     public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;
     }
 
-    /**
-     * @return LoggerInterface
-     */
-    public function getLogger()
+    public function getLogger(): LoggerInterface
     {
         return $this->logger;
     }
 
-    /**
-     * @return string
-     */
-    public function getName()
+    public function getName(): string
     {
         return 'logger';
     }

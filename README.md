@@ -14,7 +14,7 @@ decoupling. This makes it easier to use and extend.
 
 ## Getting Started
 
-Add `grepolis/php-resque` to your application's composer.json.
+Add `innogames/php-resque` to your application's composer.json.
 
 ```json
 {
@@ -26,9 +26,9 @@ Add `grepolis/php-resque` to your application's composer.json.
 
 ## Requirements
 
-* PHP 5.3+
+* PHP 7.3+ (incl. PHP 8)
 * A Redis client library (for instance, [Predis](https://github.com/nrk/predis) or [Credis](https://github.com/colinmollenhour/credis))
-* The PHP pcntl library for proper forking is recommended (not available under Windows) but it still runs without it
+* The PHP pcntl extension for proper forking is recommended (not available under Windows) but it still runs without it
 
 ## Jobs
 
