@@ -10,6 +10,7 @@ use InvalidArgumentException;
 use IteratorAggregate;
 use Resque\Exception\JobLogicException;
 use Resque\Job\Status;
+use Traversable;
 
 /**
  * Resque job.
@@ -50,7 +51,7 @@ abstract class AbstractJob implements ArrayAccess, IteratorAggregate, JobInterfa
     {
         $this->queue   = $queue;
         $this->payload = $payload;
-        $this->id      = isset($payload['id']) ? $payload['id'] : null;
+        $this->id      = $payload['id'] ?? null;
     }
 
     public function setResque(Resque $resque): void
@@ -143,7 +144,7 @@ abstract class AbstractJob implements ArrayAccess, IteratorAggregate, JobInterfa
     /**
      * @see ArrayAccess::offsetSet()
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet(mixed $offset, mixed $value): void
     {
         if (is_null($offset)) {
             $this->payload[] = $value;
@@ -155,7 +156,7 @@ abstract class AbstractJob implements ArrayAccess, IteratorAggregate, JobInterfa
     /**
      * @see ArrayAccess::offsetExists()
      */
-    public function offsetExists($offset)
+    public function offsetExists(mixed $offset): bool
     {
         return isset($this->payload[$offset]);
     }
@@ -163,7 +164,7 @@ abstract class AbstractJob implements ArrayAccess, IteratorAggregate, JobInterfa
     /**
      * @see ArrayAccess::offsetUnset()
      */
-    public function offsetUnset($offset)
+    public function offsetUnset(mixed $offset): void
     {
         unset($this->payload[$offset]);
     }
@@ -171,15 +172,15 @@ abstract class AbstractJob implements ArrayAccess, IteratorAggregate, JobInterfa
     /**
      * @see ArrayAccess::offsetGet()
      */
-    public function offsetGet($offset)
+    public function offsetGet(mixed $offset): mixed
     {
-        return isset($this->payload[$offset]) ? $this->payload[$offset] : null;
+        return $this->payload[$offset] ?? null;
     }
 
     /**
      * @see IteratorAggregate::getIterator()
      */
-    public function getIterator()
+    public function getIterator(): Traversable
     {
         return new ArrayIterator($this->payload);
     }

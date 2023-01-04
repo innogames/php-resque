@@ -1,5 +1,9 @@
 ## Forked version to add namespacing
 
+### 5.0.0 ##
+* Add Docker- and Makefile to run the application
+* Add return types for functions to avoid warnings in PHP 8.1
+
 ### 4.0.0 ##
 * Introduced strict types where possible
 * Added support for PHP 8

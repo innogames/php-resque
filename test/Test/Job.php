@@ -9,7 +9,7 @@ use Resque\Job\Status;
 
 class Job extends AbstractJob
 {
-    public $performed = false;
+    public bool $performed = false;
 
     public function perform(): void
     {

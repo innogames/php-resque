@@ -33,7 +33,7 @@
         "resque"
     ],
     "require": {
-        "php": "^7.3 || ^8.0",
+        "php": ">=7.3.0 <8.2",
         "psr/log": "^1.1",
         "symfony/console": "^5.0",
         "ext-pcntl": "*",
