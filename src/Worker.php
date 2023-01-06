@@ -259,7 +259,9 @@ class Worker implements LoggerAwareInterface
             if ($this->options['pre_perform']) {
                 $this->options['pre_perform']();
             }
-            $job->perform();
+
+            $this->performJob($job);
+
             if ($this->options['post_perform']) {
                 $this->options['post_perform']();
             }
@@ -770,6 +772,11 @@ class Worker implements LoggerAwareInterface
 
         $this->getResque()->getStatistic('failed')->incr();
         $this->getStatistic('failed')->incr();
+    }
+
+    protected function performJob(JobInterface $job): void
+    {
+        $job->perform();
     }
 
     /**
