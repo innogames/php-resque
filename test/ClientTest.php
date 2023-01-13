@@ -11,8 +11,8 @@ class ClientTest extends Test
         $values = [
             'one'   => 'abc',
             'two'   => 'def',
-            'three' => 123,
-            'four'  => 1.0 / 3
+            'three' => '123',
+            'four'  => (string) (1.0 / 3)
         ];
 
         $success  = $this->redis->hmset('some_other_key', $values);

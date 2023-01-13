@@ -26,9 +26,15 @@ Add `innogames/php-resque` to your application's composer.json.
 
 ## Requirements
 
-* PHP 7.3+ (incl. PHP 8)
+* PHP 8+
 * A Redis client library (for instance, [Predis](https://github.com/nrk/predis) or [Credis](https://github.com/colinmollenhour/credis))
 * The PHP pcntl extension for proper forking is recommended (not available under Windows) but it still runs without it
+
+## Docker Setup
+To use the docker setup it's recommended to have `docker-compose` installed.\
+Also `make` when you want to use makefile with short and useful commands.
+
+Disclaimer: This setup is has only limited support. It was tested under Ubuntu 22.04.1 LTS.
 
 ## Jobs
 

@@ -3,3 +3,5 @@ vendor/
 composer.phar
 .idea/
 build.properties
+.phpunit.result.cache
+dump.rdb

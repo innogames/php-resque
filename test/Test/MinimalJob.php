@@ -8,11 +8,11 @@ use Resque\JobInterface;
 
 class MinimalJob implements JobInterface
 {
-    public $performed = false;
+    public bool $performed = false;
 
     public function __construct(string $queue, array $payload)
     {
-        //no further setup needed for this miniaml job
+        // No further setup needed for this minimal job
     }
 
     public function perform(): void

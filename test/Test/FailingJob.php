@@ -12,7 +12,6 @@ class FailingJob extends AbstractJob
     /**
      * Execute the job
      *
-     * @return bool
      * @throws Exception
      */
     public function perform(): void
