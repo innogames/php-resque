@@ -28,7 +28,7 @@ class RedisBackend implements BackendInterface
     public function receiveFailure(array $payload, Exception $exception, Worker $worker, string $queue): void
     {
         $data            = new stdClass();
-        $data->failed_at = strftime('%a %b %d %H:%M:%S %Z %Y');
+        $data->failed_at = date("D M d H:i:s T Y", time());
         $data->payload   = $payload;
         $data->exception = $this->getClass($exception);
         $data->error     = $this->getErrorMessage($this->getDistalCause($exception));
