@@ -216,7 +216,7 @@ class Worker implements LoggerAwareInterface
 
             if (!$this->child) {
                 // Forked and we're the child. Run the job.
-                $status = 'Processing ' . $job->getQueue() . ' since ' . strftime('%F %T');
+                $status = 'Processing ' . $job->getQueue() . ' since ' . date("Y-m-d H:i:s", time());;
                 $this->updateProcLine($status);
                 $this->logger->notice($status);
                 $this->perform($job);
@@ -226,7 +226,7 @@ class Worker implements LoggerAwareInterface
                 }
             } elseif ($this->child > 0) {
                 // Parent process, sit and wait
-                $status = 'Forked ' . $this->child . ' at ' . strftime('%F %T');
+                $status = 'Forked ' . $this->child . ' at ' . date("Y-m-d H:i:s", time());;
                 $this->updateProcLine($status);
                 $this->logger->info($status);
 
@@ -492,7 +492,7 @@ class Worker implements LoggerAwareInterface
     {
         $this->logger->debug('Registering worker ' . $this->getId());
         $this->resque->getClient()->sadd($this->resque->getKey(Resque::WORKERS_KEY), $this->getId());
-        $this->resque->getClient()->set($this->getJobKey() . ':started', strftime('%a %b %d %H:%M:%S %Z %Y'));
+        $this->resque->getClient()->set($this->getJobKey() . ':started', date("D M d H:i:s T Y", time()));
     }
 
     /**
@@ -533,7 +533,7 @@ class Worker implements LoggerAwareInterface
         $data = json_encode(
             [
                 'queue'   => $job->getQueue(),
-                'run_at'  => strftime('%a %b %d %H:%M:%S %Z %Y'),
+                'run_at'  => date("D M d H:i:s T Y", time()),
                 'payload' => $job->getPayload(),
             ]
         );

@@ -1,5 +1,8 @@
 ## Forked version to add namespacing
 
+### 5.0.1 ##
+* Replace `strftime()` with `date()` to avoid deprecation warnings
+
 ### 5.0.0 ##
 * Add Docker- and Makefile to run the application
 * Add return types for functions to avoid warnings in PHP 8.1
