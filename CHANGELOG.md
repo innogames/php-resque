@@ -1,5 +1,8 @@
 ## Forked version to add namespacing
 
+### 5.0.2
+* Added support for PHP 8.2 (and above)
+
 ### 5.0.1 ##
 * Replace `strftime()` with `date()` to avoid deprecation warnings
 
