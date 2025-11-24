@@ -6,5 +6,5 @@ namespace Resque;
 
 class Version
 {
-    public const VERSION = '4.0.x';
+    public const string VERSION = '4.0.x';
 }

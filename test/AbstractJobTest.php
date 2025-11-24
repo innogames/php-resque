@@ -17,7 +17,7 @@ use Resque\Test\NoPerformJob;
  */
 class AbstractJobTest extends Test
 {
-    private const QUEUE_JOBS = 'jobs';
+    private const string QUEUE_JOBS = 'jobs';
 
     /** @var Worker */
     protected $worker;

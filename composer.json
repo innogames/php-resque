@@ -33,7 +33,7 @@
         "resque"
     ],
     "require": {
-        "php": ">=8.1",
+        "php": ">=8.4",
         "psr/log": "^1.1",
         "symfony/console": "^5.0",
         "ext-pcntl": "*",
@@ -43,8 +43,9 @@
     "require-dev": {
         "colinmollenhour/credis": "^1.11",
         "predis/predis": ">=1.1",
-        "phpunit/phpunit": "^9.4",
-        "monolog/monolog": "^2.0"
+        "phpunit/phpunit": "^9",
+        "monolog/monolog": "^2.0",
+        "rector/rector": "^2.2"
     },
     "extra": {
         "branch-alias": {

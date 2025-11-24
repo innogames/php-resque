@@ -1,5 +1,11 @@
 ## Forked version to add namespacing
 
+### 6.0.0
+* Make some php 8.4 related changes
+* update docker files
+* update composer packages
+* added rector for future upgrades & changes
+
 ### 5.0.2
 * Added support for PHP 8.2 (and above)
 

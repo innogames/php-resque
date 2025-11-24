@@ -13,7 +13,7 @@ namespace Resque;
  */
 class Statistic
 {
-    private const KEY = 'stat:';
+    private const string KEY = 'stat:';
 
     protected $resque;
     protected $statistic;
