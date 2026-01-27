@@ -20,9 +20,9 @@ class ConsoleRunner
      * A convenience method (you could always define your own HelperSet separately). Useful for writing cli-config.php.
      *
      * @param ClientInterface $client Redis connection
-     * @param LoggerInterface $logger Optional logger
+     * @param LoggerInterface|null $logger Optional logger
      */
-    public static function createHelperSet($client, LoggerInterface $logger = null): HelperSet
+    public static function createHelperSet($client, ?LoggerInterface $logger = null): HelperSet
     {
         $helper = new HelperSet();
         $helper->set(new RedisHelper($client));

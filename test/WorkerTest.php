@@ -15,9 +15,9 @@ use Resque\Test\Job;
  */
 class WorkerTest extends Test
 {
-    private const QUEUE_JOBS                    = 'jobs';
-    private const MESSAGE_CANNOT_RESERVE_JOB    = 'Cannot reserve job';
-    private const MESSAGE_JOB_FROM_VALID_QUEUES = 'Job from valid queues';
+    private const string QUEUE_JOBS                    = 'jobs';
+    private const string MESSAGE_CANNOT_RESERVE_JOB    = 'Cannot reserve job';
+    private const string MESSAGE_JOB_FROM_VALID_QUEUES = 'Job from valid queues';
 
     public function testWorkerRegistersInList(): void
     {

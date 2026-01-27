@@ -1,4 +1,4 @@
-FROM redis:7.0.7-bullseye
+FROM redis:latest
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -13,7 +13,7 @@ RUN curl -fsSL  https://packages.sury.org/php/apt.gpg| gpg --dearmor -o /etc/apt
 
 # Install php
 RUN apt update
-RUN apt install php8.1 php8.1-dom php8.1-mbstring php8.1-curl -y
+RUN apt install php8.4 php8.4-dom php8.4-mbstring php8.4-curl -y
 
 # Install tools
 RUN apt install zip unzip php-zip -y

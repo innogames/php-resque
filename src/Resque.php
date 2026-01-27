@@ -26,12 +26,10 @@ class Resque implements LoggerAwareInterface
 {
     /**#@+
      * Protocol keys
-     *
-     * @var string
      */
-    public const QUEUE_KEY   = 'queue:';
-    public const QUEUES_KEY  = 'queues';
-    public const WORKERS_KEY = 'workers';
+    public const string QUEUE_KEY   = 'queue:';
+    public const string QUEUES_KEY  = 'queues';
+    public const string WORKERS_KEY = 'workers';
     /**#@-*/
 
     /**

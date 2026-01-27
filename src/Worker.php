@@ -52,7 +52,7 @@ class Worker implements LoggerAwareInterface
      * This is not actually evaluated, but as the signal handlers require the signal number to be supplied, we just
      * assume 15 (SIGTERM) by default
      */
-    public const DEFAULT_SIGNO = 15;
+    public const int DEFAULT_SIGNO = 15;
 
     /**
      * @var string String identifying this worker.

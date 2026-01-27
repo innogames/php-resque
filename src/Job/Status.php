@@ -28,27 +28,23 @@ class Status
      * TTL at all. This can make Redis treat the keys differently, depending
      * on your maxmemory-policy (for example, volative-lru will only remove
      * keys with an expire set).
-     *
-     * @var int
      */
-    public const COMPLETE_TTL   = 86400;    // 24 hours
-    public const INCOMPLETE_TTL = 604800;   // A week
+    public const int COMPLETE_TTL   = 86400;    // 24 hours
+    public const int INCOMPLETE_TTL = 604800;   // A week
     /**#@-*/
 
     /**#@+
      * Status codes
-     *
-     * @var int
      */
-    public const STATUS_WAITING   = 1;
-    public const STATUS_RUNNING   = 2;
-    public const STATUS_FAILED    = 3;
-    public const STATUS_COMPLETE  = 4;
-    public const STATUS_RECREATED = 5;
+    public const int STATUS_WAITING   = 1;
+    public const int STATUS_RUNNING   = 2;
+    public const int STATUS_FAILED    = 3;
+    public const int STATUS_COMPLETE  = 4;
+    public const int STATUS_RECREATED = 5;
 
-    private const ATTRIBUTE_STATUS  = 'status';
-    private const ATTRIBUTE_CREATED = 'created';
-    private const ATTRIBUTE_UPDATED = 'updated';
+    private const string ATTRIBUTE_STATUS  = 'status';
+    private const string ATTRIBUTE_CREATED = 'created';
+    private const string ATTRIBUTE_UPDATED = 'updated';
     /**#@-*/
 
     /**
