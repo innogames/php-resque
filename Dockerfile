@@ -7,7 +7,7 @@ WORKDIR /app
 
 # Add sury php
 RUN apt update
-RUN apt install -y lsb-release ca-certificates apt-transport-https software-properties-common gnupg2 curl
+RUN apt install -y lsb-release ca-certificates apt-transport-https gnupg2 curl
 RUN echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/sury-php.list
 RUN curl -fsSL  https://packages.sury.org/php/apt.gpg| gpg --dearmor -o /etc/apt/trusted.gpg.d/sury-keyring.gpg
 
